@@ -1,33 +1,17 @@
-"""Источники данных о земельных участках.
+import asyncio
+import random
 
-Пока возвращаются фейковые данные для разработки.
-В будущем здесь будет интеграция с реальными API.
-"""
-
-from typing import Dict, Any
-from src.utils.logger import get_logger
-
-logger = get_logger(__name__)
-
-
-async def get_full_report(cadastral_number: str) -> Dict[str, Any]:
-    """
-    Возвращает фейковые данные по участку.
-    Потом здесь можно будет сделать реальные запросы к API.
-    
-    Args:
-        cadastral_number: Кадастровый номер
-    
-    Returns:
-        Данные об участке
-    """
-    # TODO: заменить на реальные запросы к Росреестру, ПКК, рынку и т.д.
-    logger.info(f"Получение данных по кадастровому номеру {cadastral_number}")
+async def get_fake_land_data(cadastral_number: str) -> dict:
+    """Фейковые данные для тестирования"""
+    await asyncio.sleep(1.5)
     
     return {
-        "cadastral_number": cadastral_number,
-        "area": 1200,  # кв. м
-        "estimated_price": 3_500_000,  # руб
-        "risk_level": "низкий",
-        "notes": "Фейковые данные для разработки. Реальные API ещё не подключены."
+        'cadastral_number': cadastral_number,
+        'address': f'г. Москва, ул. Примерная, д. {random.randint(1, 100)}',
+        'area_sqm': random.randint(500, 5000),
+        'category': random.choice(['Земли населённых пунктов', 'Земли сельскохозяйственного назначения', 'Земли промышленности']),
+        'market_price': random.randint(5000000, 25000000),
+        'cadastral_price': random.randint(3000000, 15000000),
+        'risks': random.choice(['Не выявлено', 'Низкий уровень риска', 'Возможны ограничения']),
+        'recommendations': random.choice(['Рекомендуется к покупке', 'Требуется дополнительная проверка', 'Хорошее предложение'])
     }

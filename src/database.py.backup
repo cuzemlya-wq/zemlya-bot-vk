@@ -17,7 +17,6 @@ class User(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     vk_user_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, index=True)
-    current_flow: Mapped[str] = mapped_column(String(50), default="greeting", nullable=False)
     first_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     last_activity: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -42,7 +41,7 @@ async def init_db():
     except Exception as e:
         logger.warning(f"Ошибка инициализации БД: {e}. Бот продолжит работу без БД.")
 
-async def save_user(vk_user_id: int, current_flow: str = "greeting"):
+async def save_user(vk_user_id: int):
     """Сохранение пользователя"""
     try:
         async with AsyncSessionLocal() as session:
@@ -53,32 +52,15 @@ async def save_user(vk_user_id: int, current_flow: str = "greeting"):
             
             if user:
                 user.last_activity = datetime.utcnow()
-                user.current_flow = current_flow
-                logger.info(f"Обновлена активность пользователя {vk_user_id}, flow={current_flow}")
+                logger.info(f"Обновлена активность пользователя {vk_user_id}")
             else:
-                user = User(vk_user_id=vk_user_id, current_flow=current_flow)
+                user = User(vk_user_id=vk_user_id)
                 session.add(user)
-                logger.info(f"Создан новый пользователь {vk_user_id}, flow={current_flow}")
+                logger.info(f"Создан новый пользователь {vk_user_id}")
             
             await session.commit()
     except Exception as e:
         logger.error(f"Ошибка сохранения пользователя: {e}")
-
-async def get_user_flow(vk_user_id: int) -> str:
-    """Получить текущий диалог пользователя"""
-    try:
-        async with AsyncSessionLocal() as session:
-            from sqlalchemy import select
-            stmt = select(User).where(User.vk_user_id == vk_user_id)
-            result = await session.execute(stmt)
-            user = result.scalar_one_or_none()
-            
-            if user:
-                return user.current_flow
-            return "greeting"
-    except Exception as e:
-        logger.error(f"Ошибка получения состояния: {e}")
-        return "greeting"
 
 async def save_report(user_id: int, cadastral_number: str, report_data: dict):
     """Сохранение отчёта"""
@@ -91,6 +73,6 @@ async def save_report(user_id: int, cadastral_number: str, report_data: dict):
             )
             session.add(report)
             await session.commit()
-            logger.info(f"Сохранен отчет для {cadastral_number}")
+            logger.info(f"Сохранен отчет для {cadastral_number} (заглушка)")
     except Exception as e:
         logger.error(f"Ошибка сохранения отчета: {e}")
