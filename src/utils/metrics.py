@@ -1,38 +1,39 @@
-"""Заглушка для сбора метрик.
+"""Простой сборщик метрик."""
 
-В будущем:
-- Сбор метрик использования
-- Аналитика запросов
-- Мониторинг производительности
-"""
-
-from src.utils.logger import get_logger
-
-logger = get_logger(__name__)
+from collections import defaultdict
+from typing import Dict, Any, Optional
 
 
 class MetricsCollector:
-    """Класс для сбора метрик."""
-    
-    def __init__(self):
-        logger.info("Инициализация MetricsCollector (заглушка)")
-    
-    async def track_request(self, user_id: int, request_type: str):
+    """
+    Очень простой сборщик метрик в памяти.
+    Пока просто считает количество событий по имени.
+    """
+
+    def __init__(self) -> None:
+        # name -> count
+        self._counters: Dict[str, int] = defaultdict(int)
+
+    def increment(self, name: str, tags: Optional[Dict[str, Any]] = None) -> None:
         """
-        Отслеживает запрос.
+        Увеличивает счётчик метрики с указанным именем.
+        tags сейчас игнорируются, но параметр оставлен на будущее.
         
         Args:
-            user_id: ID пользователя
-            request_type: Тип запроса
+            name: Имя метрики
+            tags: Дополнительные теги (пока не используются)
         """
-        logger.debug(f"Отслеживание запроса {request_type} от {user_id} (заглушка)")
-    
-    async def get_stats(self) -> dict:
+        self._counters[name] += 1
+
+    def get_counters(self) -> Dict[str, int]:
         """
-        Получает статистику.
+        Возвращает текущие значения всех счётчиков.
         
         Returns:
-            Словарь со статистикой
+            Словарь с метриками
         """
-        logger.info("Получение статистики (заглушка)")
-        return {"status": "stub"}
+        return dict(self._counters)
+
+
+# Глобальный экземпляр
+metrics = MetricsCollector()

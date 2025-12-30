@@ -90,3 +90,55 @@ async def run_bot() -> None:
     except Exception as e:
         logger.error(f"Критическая ошибка: {e}", exc_info=True)
         raise
+
+async def run_bot():
+    """Главная функция запуска бота"""
+    # Инициализация БД
+    await init_db()
+    logger.info("База данных инициализирована")
+    
+    # Подключение к VK API
+    try:
+        vk_session = vk_api.VkApi(token=settings.VK_TOKEN)
+        vk = vk_session.get_api()
+        
+        # Проверка подключения
+        group_info = vk.groups.getById(group_id=settings.VK_GROUP_ID)
+        logger.info(f"Бот подключен к группе: {group_info[0]['name']}")
+        
+        # Long Poll для получения событий
+        longpoll = VkBotLongPoll(vk_session, settings.VK_GROUP_ID)
+        
+        logger.info("🚀 Бот успешно запущен и ожидает сообщений...")
+        
+        for event in longpoll.listen():
+            if event.type == VkBotEventType.MESSAGE_NEW:
+                user_id = event.obj.message['from_id']
+                text = event.obj.message.get('text', '').strip()
+                
+                # Лимит запросов
+                if not rate_limiter.check_rate_limit(user_id):
+                    vk.messages.send(
+                        user_id=user_id,
+                        random_id=get_random_id(),
+                        message="⏳ Вы слишком часто отправляете запросы. Подождите немного."
+                    )
+                    continue
+                
+                # Обработка команд
+                if text.lower() in ['/start', 'начать']:
+                    await handle_start_command(vk, user_id)
+                elif text.lower() in ['/help', 'помощь']:
+                    await handle_help_command(vk, user_id)
+                elif text.lower().startswith('/report'):
+                    await handle_report_command(vk, user_id, text)
+                else:
+                    vk.messages.send(
+                        user_id=user_id,
+                        random_id=get_random_id(),
+                        message="❓ Команда не распознана. Используйте /help для списка команд."
+                    )
+    
+    except Exception as e:
+        logger.error(f"Критическая ошибка бота: {e}")
+        raise
