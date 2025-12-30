@@ -1,56 +1,92 @@
-"""
-Zemlya Bot VK - Main Bot Class
-Основной класс бота
-"""
+"""Основная логика VK бота."""
 
 import asyncio
-import logging
-from typing import Dict, List, Optional
-import vk_api
+from vk_api import VkApi
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from vk_api.utils import get_random_id
 
-from .config import config
-from .database import Database
-from .data_sources import DataSourceManager
-from .payment import PaymentManager
-from .utils.rate_limiter import RateLimiter
-from .utils.metrics import MetricsCollector
+from src.config import settings
+from src.utils.logger import get_logger
+
+# Инициализируем логгер
+logger = get_logger(__name__)
 
 
-class ZemlyaBot:
+def send_message(vk: VkApi, peer_id: int, text: str) -> None:
     """
-    Главный класс VK бота для анализа земельных участков
+    Отправляет сообщение в VK.
+    
+    Args:
+        vk: Экземпляр VkApi
+        peer_id: ID получателя
+        text: Текст сообщения
     """
+    try:
+        vk.messages.send(
+            peer_id=peer_id,
+            message=text,
+            random_id=get_random_id()
+        )
+        logger.info(f"Отправлено сообщение для peer_id={peer_id}")
+    except Exception as e:
+        logger.error(f"Ошибка при отправке сообщения: {e}")
 
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        
-        # VK API
-        self.vk_session = vk_api.VkApi(token=config.VK_TOKEN)
-        self.vk = self.vk_session.get_api()
-        self.longpoll = VkBotLongPoll(self.vk_session, config.VK_GROUP_ID)
-        
-        # Components
-        self.db = Database()
-        self.data_sources = DataSourceManager()
-        self.payments = PaymentManager()
-        self.rate_limiter = RateLimiter()
-        self.metrics = MetricsCollector()
-        
-    def send_message(self, user_id: int, message: str):
-        try:
-            self.vk.messages.send(
-                user_id=user_id,
-                message=message,
-                random_id=get_random_id()
-            )
-        except Exception as e:
-            self.logger.error(f"Error: {e}")
 
-    async def run(self):
-        for event in self.longpoll.listen():
+async def run_bot() -> None:
+    """
+    Запускает VK бота и слушает события.
+    """
+    logger.info("Запуск ЗемляVot v1.0...")
+    logger.info(f"Окружение: {settings.environment}")
+    logger.info(f"VK Group ID: {settings.vk_group_id}")
+    
+    try:
+        # Инициализация VK API
+        vk_session = VkApi(token=settings.vk_token)
+        vk = vk_session.get_api()
+        
+        # Инициализация Long Poll
+        longpoll = VkBotLongPoll(vk_session, settings.vk_group_id)
+        
+        logger.info("Бот успешно запущен и готов к обработке сообщений!")
+        
+        # Основной цикл обработки событий
+        for event in longpoll.listen():
+            # Обрабатываем только новые сообщения
             if event.type == VkBotEventType.MESSAGE_NEW:
-                user_id = event.obj.message['from_id']
-                text = event.obj.message['text']
-                self.send_message(user_id, f"Echo: {text}")
+                peer_id = event.obj.message['peer_id']
+                text = event.obj.message['text'].strip()
+                
+                logger.info(f"Получено сообщение от {peer_id}: {text}")
+                
+                # Обрабатываем команды
+                if text.lower() == '/start':
+                    response = (
+                        "Привет! 👋\n\n"
+                        "Я - ЗемляVot, бот для анализа земельных участков.\n\n"
+                        "Чтобы узнать, что я умею, напишите /help"
+                    )
+                    send_message(vk, peer_id, response)
+                    
+                elif text.lower() == '/help':
+                    response = (
+                        "🔍 Доступные команды:\n\n"
+                        "/start - Начать работу с ботом\n"
+                        "/help - Показать это сообщение\n\n"
+                        "🚀 Скоро будет доступен полный анализ участков!"
+                    )
+                    send_message(vk, peer_id, response)
+                    
+                else:
+                    response = (
+                        "Я пока понимаю только команды:\n"
+                        "/start - Начать работу\n"
+                        "/help - Помощь"
+                    )
+                    send_message(vk, peer_id, response)
+    
+    except KeyboardInterrupt:
+        logger.info("Бот остановлен пользователем")
+    except Exception as e:
+        logger.error(f"Критическая ошибка: {e}", exc_info=True)
+        raise
