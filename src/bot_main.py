@@ -147,8 +147,7 @@ async def run_bot():
                 elif text.lower().startswith('/report'):
                     await handle_report_command(vk, user_id, text)
                                 elif "справочник" in text.lower():
-                                                    await handle_zouit_guide(vk, user_id)
-                else:
+                    await handle_zouit_guide(vk, user_id)                else:
                     vk.messages.send(
                         user_id=user_id,
                         random_id=get_random_id(),
