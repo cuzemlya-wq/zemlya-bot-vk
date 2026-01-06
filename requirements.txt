@@ -7,3 +7,4 @@ SQLAlchemy==2.0.35
 asyncpg==0.29.0
 redis==5.2.0
 yookassa==3.0.0
+dadata>=25.0.0
