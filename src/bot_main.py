@@ -111,7 +111,6 @@ async def handle_help_command(vk: VkApi, user_id: int) -> None:
     send_message(vk, user_id, help_text)
 
 async def handle_zouit_guide(vk: VkApi, user_id: int) -> None:
-    """Обработка команды Справочник ЗОУИТ"""
     metrics.increment_command_counter('zouit_guide')
     
     step = get_dialog_step('zouit_guide')
@@ -209,8 +208,9 @@ async def run_bot():
                     await handle_start_command(vk, user_id)
                 elif text_lower in ['/help', 'помощь', 'help']:
                     await handle_help_command(vk, user_id)
-                    elif 'справочник' in text_lower or 'зоуит' in text_lower:
                     await handle_zouit_guide(vk, user_id)
+            elif 'справочник' in text_lower or 'зоуит' in text_lower:
+                await handle_zouit_guide(vk, user_id)
                 elif text_lower.startswith('/report') or text_lower.startswith('отчет') or re.search(r'\d{2}:\d{2}:\d{7}:\d+', text):cd /workspaces/zemlya-bot-vk && git log --oneline -5
                 
                     await handle_report_command(vk, user_id, text)
