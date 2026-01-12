@@ -1,0 +1,4 @@
+nohup: ignoring input
+  File "/workspaces/zemlya-bot-vk/src/bot_main.py", line 219
+    elif 'справочник' in text_lower or 'зоуит' in text_lower:
+IndentationError: unexpected indent
