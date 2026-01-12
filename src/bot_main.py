@@ -209,7 +209,8 @@ async def run_bot():
                     await handle_start_command(vk, user_id)
                 elif text_lower in ['/help', 'помощь', 'help']:
                     await handle_help_command(vk, user_id)
-                elif text_lower.startswith('/report') or text_lower.startswith('отчет') or re.search(r'\d{2}:\d{2}:\d{7}:\d+', text):
+                elif text_lower.startswith('/report') or text_lower.startswith('отчет') or re.search(r'\d{2}:\d{2}:\d{7}:\d+', text):cd /workspaces/zemlya-bot-vk && git log --oneline -5
+                
                     await handle_report_command(vk, user_id, text)
                 else:
                     # Ответ на нераспознанные сообщения

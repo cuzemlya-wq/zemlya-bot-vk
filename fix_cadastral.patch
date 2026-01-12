@@ -1,0 +1,13 @@
+--- a/src/bot_main.py
++++ b/src/bot_main.py
+@@ -200,6 +200,12 @@
+             else:
+                 # Ответ на нераспознанные сообщения
++                # Проверка на кадастровый номер
++                match = re.search(r'\d{2}:\d{2}:\d{7}:\d+', text)
++                if match:
++                    await handle_report_command(vk, user_id, text)
++                    continue
++                
+                 response_text = "❓ Команда не распознана. Используйте кнопки ниже или /help для списка команд."
+                 
