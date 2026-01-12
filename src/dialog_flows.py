@@ -189,23 +189,6 @@ DIALOG_FLOWS = {
         ]
     )
 }
- ,
-    "zouit_guide": DialogStep(
-        text="""📋 Справочник ЗОУИТ
-
-🔍 Здесь вы можете узнать о зонах с особыми условиями использования территорий:
-
-• Что такое ЗОУИТ
-• Виды ограничений
-• Как проверить участок
-• Куда обратиться за консультацией
-
-Используйте кнопки ниже для навигации.""",
-        buttons=[
-            {"label": "🏠 Главное меню", "payload": "greeting"},
-            {"label": "📞 Связаться", "payload": "contact"}
-        ]
-    )
 
 def get_dialog_step(flow_name: str) -> Optional[DialogStep]:
     """Получить шаг диалога по имени"""
@@ -229,6 +212,23 @@ def format_buttons_for_vk(buttons: List[Dict[str, str]]) -> str:
                     "payload": json.dumps({"button": button["payload"]})
                 },
                 "color": "primary" if "Да" in button["label"] or "проверить" in button["label"].lower() else "secondary"
+    ,
+    "zouit_guide": DialogStep(
+        text="""📋 Справочник ЗОУИТ
+
+🔍 Здесь вы можете узнать о зонах с особыми условиями использования территорий:
+
+• Что такое ЗОУИТ
+• Виды ограничений
+• Как проверить участок
+• Куда обратиться за консультацией
+
+Используйте кнопки ниже для навигации.""",
+        buttons=[
+            {"label": "🏠 Главное меню", "payload": "greeting"},
+            {"label": "📞 Связаться", "payload": "contact"}
+        ]
+    )
             }
         ])
     
